@@ -15,12 +15,29 @@ class XSDValidator():
     Class to validate if a XSD file is valid or not
     """
     def __init__(self, xsd_string):
+        self.tags_allowed = [
+            "xs:schema",
+            "xs:element",
+            "xs:sequence",
+            "xs:complexType",
+        ]
+        self.atributes_allowed = {
+            'xs:sequence': [],
+            'xs:complexType': [],
+            'xs:element': ['name', "type"],
+            'xs:schema': ['xmlns:xs'],
+            'xs:attribute': ['name', 'type']
+        }
         self.xsd_string = xsd_string
         self.tags = self.get_all_tags()
         self.tree = self.generate_xsd_tree()
 
     def get_all_tags(self):
-        xsd_tags = re.findall(r'<([^>]+)>', self.xsd_string)
+        xsd_tags = []
+        xsd_tags_init: list[str] = re.findall(r'<([^>]+)>', self.xsd_string)
+        for tag in xsd_tags_init:
+            if tag.startswith("!-") is False:
+                xsd_tags.append(tag)
         return xsd_tags
 
     def get_attributes(self, tag: str) -> list[tuple[str, str]]:
@@ -60,16 +77,35 @@ class XSDValidator():
             if tag.is_opening_tag:
                 stack.append(tag)
                 if len(stack) == 1:
+                    if tag.name != "xs:schema":
+                        raise XSDError(message=f"The first tag should be a xs:schema")
                     root_counter += 1
             if tag.is_closing_tag:
                 if not stack:
                     return False
+                if tag.name != stack[-1].name:
+                    raise XSDError(message=f"{stack[-1].name} is not closed")
                 stack.pop()
         
         if stack:
             raise XSDError(f"Tag '{stack[-1].name}' is not closed")
         if root_counter > 1:
             raise XSDError("Multiple root elements found")
+        return True
+    
+    def check_if_tags_is_allowed(self):
+        for tag in self.tree:
+            if tag.name not in self.tags_allowed:
+                raise XSDError(message=f"TagName {tag.name} is not allowed")
+        return True
+            
+    def check_if_attributes_is_allowed(self):
+        for tag in self.tree:
+            for attribute in tag.attributes:
+                if attribute not in self.atributes_allowed[tag.name]:
+                    raise XSDError(message=f"Attribute {attribute} is not allowed")
+                if tag.is_opening_tag is False:
+                    raise XSDError(message=f"the closing tag cannot contain attributes")
         return True
 
 
@@ -97,3 +133,5 @@ if __name__ == '__main__':
         print(tag)
 
     print(xsd_validator.check_if_all_tags_are_closed())
+    print(xsd_validator.check_if_attributes_is_allowed())
+    print(xsd_validator.check_if_tags_is_allowed())
