@@ -3,6 +3,7 @@ import re
 
 from xml_parser_comp.exceptions.xsd_error import XSDError
 from xml_parser_comp.model.xsd_token import XSDToken
+from xml_parser_comp.model.xsd_tree import XSDTree
 
 class XSDValidator():
     """
@@ -24,7 +25,7 @@ class XSDValidator():
         }
         self.xsd_string = xsd_string
         self.tags = self.get_all_tags()
-        self.tree = self.generate_xsd_tree()
+        self.tokens = self.generate_xsd_tree()
 
     def get_all_tags(self):
         xsd_tags = []
@@ -67,7 +68,7 @@ class XSDValidator():
     def check_if_all_tags_are_closed(self) -> bool:
         stack = []
         root_counter = 0
-        for tag in self.tree:
+        for tag in self.tokens:
             if tag.is_opening_tag:
                 stack.append(tag)
                 if len(stack) == 1:
@@ -88,13 +89,13 @@ class XSDValidator():
         return True
     
     def check_if_tags_is_allowed(self):
-        for tag in self.tree:
+        for tag in self.tokens:
             if tag.name not in self.tags_allowed:
                 raise XSDError(message=f"TagName {tag.name} is not allowed")
         return True
             
     def check_if_attributes_is_allowed(self):
-        for tag in self.tree:
+        for tag in self.tokens:
             for attribute in tag.attributes:
                 if attribute not in self.atributes_allowed[tag.name]:
                     raise XSDError(message=f"Attribute {attribute} is not allowed")
@@ -102,7 +103,26 @@ class XSDValidator():
                     raise XSDError(message=f"the closing tag cannot contain attributes")
         return True
 
-
+    def generate_xsd_token(self) -> XSDTree:
+        stack = []
+        xsd_tree: XSDTree = None
+        for token in self.tokens:
+            if token.is_opening_tag:
+                tag = XSDTree(tag=token.name)
+                if token.name == "xs:complexType":
+                    print(tag)
+                    print(token)
+                elif token.name == "xs:element":
+                    new_tag = XSDTree(tag=token.attributes.get("name"), type=token.attributes.get("type"))
+                    if not stack:
+                        xsd_tree = new_tag
+                        stack.append(new_tag)
+                    else:
+                        stack[-1].children.append(new_tag)
+                elif token.name == "xs:sequence":
+                    stack[-1].type = "xs:sequence"
+        print(stack)
+        return xsd_tree
 
 
 if __name__ == '__main__':
@@ -122,10 +142,11 @@ if __name__ == '__main__':
     """
 
     xsd_validator = XSDValidator(xsd_string)
-    tree = xsd_validator.generate_xsd_tree()
-    for tag in tree:
+    tokens = xsd_validator.generate_xsd_tree()
+    for tag in tokens:
         print(tag)
 
     print(xsd_validator.check_if_all_tags_are_closed())
     print(xsd_validator.check_if_attributes_is_allowed())
     print(xsd_validator.check_if_tags_is_allowed())
+    print(xsd_validator.generate_xsd_token())

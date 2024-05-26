@@ -11,7 +11,7 @@ class XMLToken(BaseModel):
     type: TagType
     is_opening_tag: bool
     is_closing_tag: bool
-    tag_name: str | None = None
     text: str | None = None
+    tag_name: str | None = None
 
     model_config = ConfigDict(use_enum_values=True)
