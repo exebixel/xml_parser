@@ -1,14 +1,8 @@
 import re
 
-from pydantic import BaseModel
 
 from xml_parser_comp.exception import XSDError
-
-class Tag(BaseModel):
-    name: str
-    attributes: dict
-    is_opening_tag: bool
-    is_closing_tag: bool
+from xml_parser_comp.model.xsd_token import XSDToken
 
 class XSDValidator():
     """
@@ -44,7 +38,7 @@ class XSDValidator():
         attributes = re.findall(r'([\w:]+)="([^"]+)"', tag)
         return attributes 
 
-    def generate_xsd_tree(self) -> list[Tag]:
+    def generate_xsd_tree(self) -> list[XSDToken]:
         xsd_tree = []
 
         for tag in self.tags:
@@ -65,7 +59,7 @@ class XSDValidator():
             tag_name = tag.split(' ')[0]
             tag_name = tag_name.replace('/', '')
             
-            _tag = Tag(name=tag_name, attributes=attributes, is_opening_tag=is_opening_tag, is_closing_tag=is_closing_tag)
+            _tag = XSDToken(name=tag_name, attributes=attributes, is_opening_tag=is_opening_tag, is_closing_tag=is_closing_tag)
             xsd_tree.append(_tag)
 
         return xsd_tree
