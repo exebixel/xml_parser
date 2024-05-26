@@ -2,6 +2,7 @@ import re
 
 from xml_parser_comp.exceptions.xml_error import XMLParseError
 from xml_parser_comp.model.xml_token import XMLToken
+from xml_parser_comp.model.xml_tree import XMLTree
 
 
 class XMLBaseValidator:
@@ -27,7 +28,8 @@ class XMLBaseValidator:
                     )
                 )
             else:  # This is text
-                if match[2].strip().replace("\n", "") == "":
+                text = match[2].strip().replace("\n", "")
+                if text == "":
                     continue
 
                 result.append(
@@ -36,7 +38,7 @@ class XMLBaseValidator:
                         is_opening_tag=False,
                         is_closing_tag=False,
                         tag_name=None,
-                        text=match[2],
+                        text=text,
                     )
                 )
         return result
@@ -62,6 +64,27 @@ class XMLBaseValidator:
             raise XMLParseError("There should be only one root element")
         return True
 
+    def generate_xml_tree(self):
+        stack = []
+        xml_tree = None
+        for token in self.xml_tokens:
+            if token.is_opening_tag:
+                if not stack:
+                    xml_tree = XMLTree(tag=token.tag_name)
+                    stack.append(xml_tree)
+                else:
+                    tag = XMLTree(tag=token.tag_name)
+                    stack[-1].children.append(tag)
+                    stack.append(tag)
+            elif token.is_closing_tag:
+                stack.pop()
+            else:
+                stack[-1].text = (
+                    stack[-1].text + " " + token.text if stack[-1].text else token.text
+                )
+
+        return xml_tree
+
     def validate(self):
         self.parse_tag()
         self.check_if_all_tags_are_closed()
@@ -72,11 +95,22 @@ if __name__ == "__main__":
     <note>
         <to>Tove</to>
         <from>Jani</from>
+        <from>Jani</from>
         <heading>Reminder</heading>
-        <body>Don't forget me this weekend!</body>
+        <body>Don't forget me this weekend!
+            <magia>hola</magia>
+            Haha
+        </body>
     </note>
     """
     xml_validator = XMLBaseValidator(xml_string)
+    xml_validator.validate()
 
-    for tag in xml_validator.parse_tag():
-        print(tag)
+    xml_tree = xml_validator.generate_xml_tree()
+    print(xml_tree.tag)
+    for tree in xml_tree.children:
+        print("\t", tree)
+        for child in tree.children:
+            print("\t\t", child)
+            for sub_child in child.children:
+                print("\t\t\t", sub_child)
