@@ -8,9 +8,9 @@ from xml_parser_comp.model.xml_tree import XMLTree
 class XMLBaseValidator:
     def __init__(self, xml_string: str):
         self.xml_string: str = xml_string
-        self.xml_tokens: list[XMLToken] = self.parse_tag()
+        self.xml_tokens: list[XMLToken] = []
 
-    def parse_tag(self) -> list[XMLToken]:
+    def generate_tokens(self) -> list[XMLToken]:
         matches = re.findall(r"<(/?)([^>]+)>|([^<]+)", self.xml_string)
         result = []
         for match in matches:
@@ -64,6 +64,10 @@ class XMLBaseValidator:
             raise XMLParseError("There should be only one root element")
         return True
 
+    def validate(self):
+        self.xml_tokens = self.generate_tokens()
+        self.check_if_all_tags_are_closed()
+
     def generate_xml_tree(self):
         stack = []
         xml_tree = None
@@ -85,9 +89,11 @@ class XMLBaseValidator:
 
         return xml_tree
 
-    def validate(self):
-        self.parse_tag()
-        self.check_if_all_tags_are_closed()
+    def print_xml_tree(self, xml_tree: XMLTree, level=0):
+        print("  " * level, f'Tag: {xml_tree.tag}', end="")
+        print(f', Text: {xml_tree.text}' if xml_tree.text else "")
+        for child in xml_tree.children:
+            self.print_xml_tree(child, level + 1)
 
 
 if __name__ == "__main__":
@@ -107,10 +113,11 @@ if __name__ == "__main__":
     xml_validator.validate()
 
     xml_tree = xml_validator.generate_xml_tree()
-    print(xml_tree.tag)
-    for tree in xml_tree.children:
-        print("\t", tree)
-        for child in tree.children:
-            print("\t\t", child)
-            for sub_child in child.children:
-                print("\t\t\t", sub_child)
+    xml_validator.print_xml_tree(xml_tree)
+    # print(xml_tree.tag)
+    # for tree in xml_tree.children:
+    #     print("\t", tree)
+    #     for child in tree.children:
+    #         print("\t\t", child)
+    #         for sub_child in child.children:
+    #             print("\t\t\t", sub_child)

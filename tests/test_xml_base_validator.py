@@ -18,7 +18,7 @@ class TestXMLBaseValidator(unittest.TestCase):
         """
         xml_validator = XMLBaseValidator(xml_string)
         self.assertEqual(
-            xml_validator.parse_tag(),
+            xml_validator.generate_tokens(),
             [
                 XMLToken(
                     type="Tag",
@@ -132,7 +132,7 @@ class TestXMLBaseValidator(unittest.TestCase):
         </note>
         """
         xml_validator = XMLBaseValidator(xml_string)
-        xml_validator.parse_tag()
+        xml_validator.xml_tokens = xml_validator.generate_tokens()
         self.assertTrue(xml_validator.check_if_all_tags_are_closed())
 
         xml_string = """
@@ -144,6 +144,7 @@ class TestXMLBaseValidator(unittest.TestCase):
         </note>
         """
         xml_validator = XMLBaseValidator(xml_string)
+        xml_validator.xml_tokens = xml_validator.generate_tokens()
         with self.assertRaises(XMLParseError):
             xml_validator.check_if_all_tags_are_closed()
 
@@ -157,7 +158,7 @@ class TestXMLBaseValidator(unittest.TestCase):
         </note>
         """
         xml_validator = XMLBaseValidator(xml_string)
-        xml_validator.parse_tag()
+        xml_validator.xml_tokens = xml_validator.generate_tokens()
         self.assertTrue(xml_validator.check_if_all_tags_are_closed())
 
     
@@ -173,6 +174,7 @@ class TestXMLBaseValidator(unittest.TestCase):
         </error>
         """
         xml_validator = XMLBaseValidator(xml_string)
+        xml_validator.xml_tokens = xml_validator.generate_tokens()
         with self.assertRaises(XMLParseError):
             xml_validator.check_if_all_tags_are_closed()
 
@@ -187,5 +189,31 @@ class TestXMLBaseValidator(unittest.TestCase):
         <note>
         """
         xml_validator = XMLBaseValidator(xml_string)
+        xml_validator.xml_tokens = xml_validator.generate_tokens()
         with self.assertRaises(XMLParseError):
             xml_validator.check_if_all_tags_are_closed()
+
+    def test_generate_xml_tree(self):
+        xml_string = """
+        <note>
+            <to>Tove</to>
+            <from>Jani</from>
+            <heading>Reminder</heading>
+            <body>Don't forget me this weekend!</body>
+        </note>
+        """
+        xml_validator = XMLBaseValidator(xml_string)
+        xml_validator.validate()
+        xml_tree = xml_validator.generate_xml_tree()
+        self.assertEqual(xml_tree.tag, "note")
+        self.assertEqual(len(xml_tree.children), 4)
+        self.assertEqual(xml_tree.children[0].tag, "to")
+        self.assertEqual(xml_tree.children[0].text, "Tove")
+        self.assertEqual(xml_tree.children[1].tag, "from")
+        self.assertEqual(xml_tree.children[1].text, "Jani")
+        self.assertEqual(xml_tree.children[2].tag, "heading")
+        self.assertEqual(xml_tree.children[2].text, "Reminder")
+        self.assertEqual(xml_tree.children[3].tag, "body")
+        self.assertEqual(xml_tree.children[3].text, "Don't forget me this weekend!")
+
+    
