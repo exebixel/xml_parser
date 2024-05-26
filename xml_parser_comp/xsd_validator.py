@@ -1,7 +1,7 @@
 import re
 
 
-from xml_parser_comp.exception import XSDError
+from xml_parser_comp.exceptions.xsd_error import XSDError
 from xml_parser_comp.model.xsd_token import XSDToken
 
 class XSDValidator():
