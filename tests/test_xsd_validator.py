@@ -2,7 +2,7 @@ import unittest
 
 
 from xml_parser_comp.xsd_validator import XSDValidator
-from xml_parser_comp.exception import XSDError
+from xml_parser_comp.exceptions.xsd_error import XSDError
 
 
 class TestXSDValidator(unittest.TestCase):
