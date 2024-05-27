@@ -3,6 +3,7 @@ import re
 
 from xml_parser_comp.exceptions.xsd_error import XSDError
 from xml_parser_comp.model.xsd_token import XSDToken
+from xml_parser_comp.model.xsd_tree import XSDTree
 
 class XSDValidator():
     """
@@ -24,7 +25,7 @@ class XSDValidator():
         }
         self.xsd_string = xsd_string
         self.tags = self.get_all_tags()
-        self.tree = self.generate_xsd_tree()
+        self.tokens: list[XSDToken] = self.generate_xsd_tokens()
 
     def get_all_tags(self):
         xsd_tags = []
@@ -38,7 +39,7 @@ class XSDValidator():
         attributes = re.findall(r'([\w:]+)="([^"]+)"', tag)
         return attributes 
 
-    def generate_xsd_tree(self) -> list[XSDToken]:
+    def generate_xsd_tokens(self) -> list[XSDToken]:
         xsd_tree = []
 
         for tag in self.tags:
@@ -67,7 +68,7 @@ class XSDValidator():
     def check_if_all_tags_are_closed(self) -> bool:
         stack = []
         root_counter = 0
-        for tag in self.tree:
+        for tag in self.tokens:
             if tag.is_opening_tag:
                 stack.append(tag)
                 if len(stack) == 1:
@@ -88,19 +89,61 @@ class XSDValidator():
         return True
     
     def check_if_tags_is_allowed(self):
-        for tag in self.tree:
+        for tag in self.tokens:
             if tag.name not in self.tags_allowed:
                 raise XSDError(message=f"TagName {tag.name} is not allowed")
         return True
             
     def check_if_attributes_is_allowed(self):
-        for tag in self.tree:
+        for tag in self.tokens:
             for attribute in tag.attributes:
                 if attribute not in self.atributes_allowed[tag.name]:
                     raise XSDError(message=f"Attribute {attribute} is not allowed")
                 if tag.is_opening_tag is False:
                     raise XSDError(message=f"the closing tag cannot contain attributes")
         return True
+
+
+    def validate(self):
+        self.check_if_all_tags_are_closed()
+        self.check_if_tags_is_allowed()
+        self.check_if_attributes_is_allowed()
+
+    def generate_xsd_tree(self):
+        xsd_tree: XSDTree = None
+        stack = []
+        for token in self.tokens:
+            if token.is_opening_tag:
+
+                if token.name == "xs:complexType":
+                    stack.append(None)
+
+                elif token.name == "xs:sequence" and stack[-1] is None:
+                    if stack[-2].type is not None:
+                        raise XSDError("complexElement should not have a type")
+                    stack[-2].type = "sequence"
+                
+                elif token.name == "xs:sequence" and stack[-1] is not None:
+                    raise XSDError("xs:sequence should be a child of xs:complexType")
+
+                elif token.name == "xs:element":
+                    tag = XSDTree(name=token.attributes.get("name"), type=token.attributes.get("type"))
+                    if not stack:
+                        xsd_tree = tag
+                        stack.append(tag)
+                    elif stack[-1] is None:
+                        stack[-2].children.append(tag)
+                        stack.pop()
+                        stack.append(tag)
+                    else:
+                        stack[-1].children.append(tag)
+                        stack.append(tag)
+
+            if token.name == "xs:element" and token.is_closing_tag:
+                stack.pop()
+        
+        return xsd_tree
+
 
 
 
@@ -114,7 +157,13 @@ if __name__ == '__main__':
                     <xs:element name="to" type="xs:string"/>
                     <xs:element name="from" type="xs:string"/>
                     <xs:element name="heading" type="xs:string"/>
-                    <xs:element name="body" type="xs:string"/>
+                    <xs:element name="body">
+                        <xs:complexType>
+                            <xs:sequence>
+                                <xs:element name="magia" type="xs:string"/>
+                            </xs:sequence>
+                        </xs:complexType>
+                    </xs:element>
                 </xs:sequence>
             </xs:complexType>
         </xs:element>
@@ -122,10 +171,18 @@ if __name__ == '__main__':
     """
 
     xsd_validator = XSDValidator(xsd_string)
-    tree = xsd_validator.generate_xsd_tree()
-    for tag in tree:
-        print(tag)
+    xsd_validator.validate()
 
-    print(xsd_validator.check_if_all_tags_are_closed())
-    print(xsd_validator.check_if_attributes_is_allowed())
-    print(xsd_validator.check_if_tags_is_allowed())
+    tree = xsd_validator.generate_xsd_tree()
+    print(tree)
+    for child in tree.children:
+        print('  ', child)
+        for sub_child in child.children:
+            print('    ', sub_child)
+    # tree = xsd_validator.generate_xsd_tree()
+    # for tag in tree:
+    #     print(tag)
+
+    # print(xsd_validator.check_if_all_tags_are_closed())
+    # print(xsd_validator.check_if_attributes_is_allowed())
+    # print(xsd_validator.check_if_tags_is_allowed())
