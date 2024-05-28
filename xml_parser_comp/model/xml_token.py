@@ -13,5 +13,6 @@ class XMLToken(BaseModel):
     is_closing_tag: bool
     tag_name: str | None = None
     text: str | None = None
+    attributes: dict[str, str] = {}
 
     model_config = ConfigDict(use_enum_values=True)

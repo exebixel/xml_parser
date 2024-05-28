@@ -9,4 +9,5 @@ class XMLTree(BaseModel):
 
     tag: str
     text: str = ""
+    attributes: dict[str, str] = {}
     children: list['XMLTree'] = []

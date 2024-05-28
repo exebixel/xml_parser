@@ -17,7 +17,9 @@ class XMLBaseValidator:
             if match[0] or match[1]:  # This is a tag
                 is_opening_tag = match[0] == ""
                 is_closing_tag = match[0] == "/"
-                tag_name = match[1]
+                tag = match[1]
+                attributes = self.get_attributes(tag)
+                tag_name = tag.split(" ")[0]
                 result.append(
                     XMLToken(
                         type="Tag",
@@ -25,6 +27,7 @@ class XMLBaseValidator:
                         is_closing_tag=is_closing_tag,
                         tag_name=tag_name,
                         text=None,
+                        attributes=dict(attributes),
                     )
                 )
             else:  # This is text
@@ -42,6 +45,18 @@ class XMLBaseValidator:
                     )
                 )
         return result
+
+    def get_all_tags(self):
+        xsd_tags = []
+        xsd_tags_init: list[str] = re.findall(r"<([^>]+)>", self.xsd_string)
+        for tag in xsd_tags_init:
+            if tag.startswith("!-") is False:
+                xsd_tags.append(tag)
+        return xsd_tags
+
+    def get_attributes(self, tag: str) -> list[tuple[str, str]]:
+        attributes = re.findall(r'([\w:]+)="([^"]+)"', tag)
+        return attributes
 
     def check_if_all_tags_are_closed(self) -> bool:
         stack: list[XMLToken] = []
@@ -74,10 +89,10 @@ class XMLBaseValidator:
         for token in self.xml_tokens:
             if token.is_opening_tag:
                 if not stack:
-                    xml_tree = XMLTree(tag=token.tag_name)
+                    xml_tree = XMLTree(tag=token.tag_name, attributes=token.attributes)
                     stack.append(xml_tree)
                 else:
-                    tag = XMLTree(tag=token.tag_name)
+                    tag = XMLTree(tag=token.tag_name, attributes=token.attributes)
                     stack[-1].children.append(tag)
                     stack.append(tag)
             elif token.is_closing_tag:
@@ -90,15 +105,16 @@ class XMLBaseValidator:
         return xml_tree
 
     def print_xml_tree(self, xml_tree: XMLTree, level=0):
-        print("  " * level, f'Tag: {xml_tree.tag}', end="")
-        print(f', Text: {xml_tree.text}' if xml_tree.text else "")
+        print("  " * level, f"Tag: {xml_tree.tag}", end="")
+        print(f", Attributes: {xml_tree.attributes}" if xml_tree.attributes else "", end="")
+        print(f", Text: {xml_tree.text}" if xml_tree.text else "")
         for child in xml_tree.children:
             self.print_xml_tree(child, level + 1)
 
 
 if __name__ == "__main__":
     xml_string = """
-    <note>
+    <note key="test">
         <to>Tove</to>
         <from>Jani</from>
         <from>Jani</from>
