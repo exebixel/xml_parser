@@ -82,7 +82,7 @@ class XSDValidator:
                     root_counter += 1
             if tag.is_closing_tag:
                 if not stack:
-                    return False
+                    raise XSDError(message="There is a closing tag without an opening tag")
                 if tag.name != stack[-1].name:
                     raise XSDError(message=f"{stack[-1].name} is not closed")
                 stack.pop()
@@ -108,10 +108,40 @@ class XSDValidator:
                     raise XSDError(message=f"the closing tag cannot contain attributes")
         return True
 
+    def check_if_tags_is_ordered(self):
+        stack = []
+        for tag in self.tokens:
+            if tag.is_opening_tag:
+                if tag.name == "xs:schema" and stack:
+                    raise XSDError(message="xs:schema should be the first tag")
+
+                if tag.name == "xs:element" and not stack:
+                    raise XSDError(message="xs:element should be a child of xs:schema")
+                if tag.name == "xs:complexType" and not stack:
+                    raise XSDError(message="xs:complexType should be a child of xs:element")
+                if tag.name == "xs:sequence" and not stack:
+                    raise XSDError(message="xs:sequence should be a child of xs:complexType")
+                if tag.name == "xs:attribute" and not stack:
+                    raise XSDError(message="xs:attribute should be a child of xs:complexType")
+
+                if tag.name == "xs:complexType" and stack[-1].name != "xs:element":
+                    raise XSDError(message="xs:complexType should be a child of xs:element")
+
+                if tag.name == "xs:sequence" and stack[-1].name != "xs:complexType":
+                    raise XSDError(message="xs:sequence should be a child of xs:complexType")
+                if tag.name == "xs:attribute" and stack[-1].name != "xs:complexType":
+                    raise XSDError(message="xs:attribute should be a child of xs:complexType")
+                if tag.name == "xs:element" and stack[-1].name != "xs:sequence" and stack[-1].name != "xs:schema":
+                    raise XSDError(message="xs:element should be a child of xs:sequence or xs:schema")
+
+            if tag.is_closing_tag:
+                stack.pop()
+
     def validate(self):
         self.check_if_all_tags_are_closed()
         self.check_if_tags_is_allowed()
         self.check_if_attributes_is_allowed()
+        self.check_if_tags_is_ordered()
 
     def generate_xsd_tree(self):
         xsd_tree: XSDTree = None
@@ -173,9 +203,7 @@ if __name__ == "__main__":
                     <xs:element name="from" type="xs:string"/>
                     <xs:element name="heading">
                         <xs:complexType>
-                            <xs:sequence>
-                                <xs:element name="magia" type="xs:string"/>
-                            </xs:sequence>
+                            <xs:element name="magia" type="xs:string"/>
                             <xs:attribute name="valor" type="xs:string"/>
                         </xs:complexType>
                     </xs:element>
