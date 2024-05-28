@@ -157,6 +157,8 @@ class XSDValidator:
 
             if token.name == "xs:element" and token.is_closing_tag:
                 stack.pop()
+            if token.name == "xs:complexType" and token.is_closing_tag:
+                stack.pop()
 
         return xsd_tree
 
@@ -169,7 +171,14 @@ if __name__ == "__main__":
                 <xs:sequence>
                     <xs:element name="to" type="xs:string"/>
                     <xs:element name="from" type="xs:string"/>
-                    <xs:element name="heading" type="xs:string"/>
+                    <xs:element name="heading">
+                        <xs:complexType>
+                            <xs:sequence>
+                                <xs:element name="magia" type="xs:string"/>
+                            </xs:sequence>
+                            <xs:attribute name="valor" type="xs:string"/>
+                        </xs:complexType>
+                    </xs:element>
                     <xs:element name="body">
                         <xs:complexType>
                             <xs:sequence>
