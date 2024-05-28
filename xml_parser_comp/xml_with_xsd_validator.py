@@ -10,7 +10,7 @@ class XMLWithXSDValidator:
         self.xsd_tree: XSDTree = xsd_tree
 
     def validate(self) -> bool:
-        return self.validate_tag(xml_tree, xsd_tree)
+        return self.validate_tag(self.xml_tree, self.xsd_tree)
 
     def validate_tag(self, xml_tag: XMLTree, xsd_tag: XSDTree) -> bool:
         if xml_tag.tag != xsd_tag.name:

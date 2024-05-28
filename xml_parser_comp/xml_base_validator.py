@@ -74,7 +74,7 @@ class XMLBaseValidator:
                 stack.pop()
 
         if stack:
-            raise XMLParseError(f"Tag '{stack[-1].name}' is not closed")
+            raise XMLParseError(f"Tag '{stack[-1].tag_name}' is not closed")
         if root_counter != 1:
             raise XMLParseError("There should be only one root element")
         return True
