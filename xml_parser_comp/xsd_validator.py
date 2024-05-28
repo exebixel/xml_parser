@@ -129,10 +129,12 @@ class XSDValidator:
 
                 if tag.name == "xs:sequence" and stack[-1].name != "xs:complexType":
                     raise XSDError(message="xs:sequence should be a child of xs:complexType")
-                if tag.name == "xs:attribute" and stack[-1].name != "xs:complexType":
+                if tag.name == "xs:attribute" and stack[-1].name != "xs:element":
                     raise XSDError(message="xs:attribute should be a child of xs:complexType")
                 if tag.name == "xs:element" and stack[-1].name != "xs:sequence" and stack[-1].name != "xs:schema":
                     raise XSDError(message="xs:element should be a child of xs:sequence or xs:schema")
+
+                stack.append(tag)
 
             if tag.is_closing_tag:
                 stack.pop()
@@ -157,18 +159,12 @@ class XSDValidator:
                         raise XSDError("complexElement should not have a type")
                     stack[-2].type = XSDElementTypeAttribute.SEQUENCE
 
-                elif token.name == "xs:sequence" and stack[-1] is not None:
-                    raise XSDError("xs:sequence should be a child of xs:complexType")
-
                 elif token.name == "xs:attribute" and stack[-1] is None:
                     attribute = XSDAttribute(
                         name=token.attributes.get("name"),
                         type=token.attributes.get("type"),
                     )
                     stack[-2].attributes.append(attribute)
-
-                elif token.name == "xs:attribute" and stack[-1] is not None:
-                    raise XSDError("xs:attribute should be a child of xs:complexType")
 
                 elif token.name == "xs:element":
                     tag = XSDTree(
