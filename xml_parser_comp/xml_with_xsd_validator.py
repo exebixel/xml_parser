@@ -1,3 +1,4 @@
+from xml_parser_comp.element_type_validator import ElementTypeValidator
 from xml_parser_comp.exceptions.xml_error import XMLParseError
 from xml_parser_comp.model.xml_tree import XMLTree
 from xml_parser_comp.model.xsd_tree import XSDElementTypeAttribute, XSDTree
@@ -16,11 +17,26 @@ class XMLWithXSDValidator:
             raise XMLParseError(f"Tag {xml_tag.tag} is not allowed in this context")
 
         if xsd_tag.type is not None:
-            pass
+            if not ElementTypeValidator.validate_type(xml_tag.text, xsd_tag.type):
+                raise XMLParseError(f"Tag {xml_tag.tag} has the wrong type")
 
-        # for attribute in xml_tag.attributes:
-        #     if attribute not in xsd_tag.attributes:
-        #         raise XMLParseError(f"Attribute {attribute} is not allowed in this context")
+        for xsd_attribute in xsd_tag.attributes:
+            if xsd_attribute.name not in xml_tag.attributes:
+                raise XMLParseError(
+                    f"Tag {xml_tag.tag} has not the attribute {xsd_attribute.name}"
+                )
+            if not ElementTypeValidator.validate_type(
+                xml_tag.attributes[xsd_attribute.name], xsd_attribute.type
+            ):
+                raise XMLParseError(
+                    f"Tag {xml_tag.tag} has the wrong type for the attribute {xsd_attribute.name}"
+                )
+        else:
+            if len(xml_tag.attributes) > len(xsd_tag.attributes):
+                extra_attributes = list(xml_tag.attributes)[len(xsd_tag.attributes) :]
+                raise XMLParseError(
+                    f"XML has not this attribute: {extra_attributes[0]} in {xml_tag.tag}"
+                )
 
         for index in range(len(xml_tag.children)):
             child = xml_tag.children[index]
@@ -33,7 +49,7 @@ class XMLWithXSDValidator:
             if len(xml_tag.children) < len(xsd_tag.children):
                 extra_tags = xsd_tag.children[len(xml_tag.children) :]
                 raise XMLParseError(
-                    f"XML has not this tags: {', '.join([tag.name for tag in extra_tags])} in {xml_tag.tag}"
+                    f"XML has not this tags: {extra_tags[0]} in {xml_tag.tag}"
                 )
 
         return True
@@ -52,13 +68,13 @@ if __name__ == "__main__":
         <to>Tove</to>
         <from>Jani</from>
         <heading>Reminder</heading>
-        <body>Don't forget me this weekend!</body>
+        <body valor="teste">Don't forget me this weekend!</body>
     </note>
     """
     )
     xml_parser.validate()
     xsd_parser = XSDValidator(
-        """
+    """
     <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
         <xs:element name="note">
             <xs:complexType>
@@ -66,7 +82,11 @@ if __name__ == "__main__":
                     <xs:element name="to" type="xs:string"/>
                     <xs:element name="from" type="xs:string"/>
                     <xs:element name="heading" type="xs:string"/>
-                    <xs:element name="body" type="xs:string"/>
+                    <xs:element name="body" type="xs:string">
+                        <xs:complexType>
+                            <xs:attribute name="valor" type="xs:string"/>
+                        </xs:complexType>
+                    </xs:element>
                 </xs:sequence>
             </xs:complexType>
         </xs:element>
