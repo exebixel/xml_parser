@@ -54,9 +54,6 @@ class XMLWithXSDValidator:
 
         return True
 
-    def validate_type(text: str, type: XSDElementTypeAttribute):
-        pass
-
 
 if __name__ == "__main__":
     from xml_parser_comp.xml_base_validator import XMLBaseValidator
