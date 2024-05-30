@@ -110,8 +110,7 @@ class XSDValidator():
             if token.is_opening_tag:
                 tag = XSDTree(tag=token.name)
                 if token.name == "xs:complexType":
-                    print(tag)
-                    print(token)
+                    print(self.tags)
                 elif token.name == "xs:element":
                     new_tag = XSDTree(tag=token.attributes.get("name"), type=token.attributes.get("type"))
                     if not stack:
@@ -143,8 +142,6 @@ if __name__ == '__main__':
 
     xsd_validator = XSDValidator(xsd_string)
     tokens = xsd_validator.generate_xsd_tree()
-    for tag in tokens:
-        print(tag)
 
     print(xsd_validator.check_if_all_tags_are_closed())
     print(xsd_validator.check_if_attributes_is_allowed())
