@@ -70,6 +70,17 @@ class XSDValidator:
 
         return xsd_tree
 
+    def check_first_tags(self):
+        if self.tokens[0].name != "?xml" and self.tokens[
+            0
+        ].attributes not in ["version"]:
+            raise XSDError("First tag should be <?xml version='1.0'?>")
+        if self.tokens[0].attributes.get("version") != "1.0":
+            raise XSDError("XML Version should be 1.0")
+        self.tokens = self.tokens[1:]
+
+        return True
+
     def check_if_all_tags_are_closed(self) -> bool:
         stack = []
         root_counter = 0
@@ -129,7 +140,7 @@ class XSDValidator:
 
                 if tag.name == "xs:sequence" and stack[-1].name != "xs:complexType":
                     raise XSDError(message="xs:sequence should be a child of xs:complexType")
-                if tag.name == "xs:attribute" and stack[-1].name != "xs:element":
+                if tag.name == "xs:attribute" and stack[-1].name != "xs:complexType":
                     raise XSDError(message="xs:attribute should be a child of xs:complexType")
                 if tag.name == "xs:element" and stack[-1].name != "xs:sequence" and stack[-1].name != "xs:schema":
                     raise XSDError(message="xs:element should be a child of xs:sequence or xs:schema")
@@ -140,6 +151,7 @@ class XSDValidator:
                 stack.pop()
 
     def validate(self):
+        self.check_first_tags()
         self.check_if_all_tags_are_closed()
         self.check_if_tags_is_allowed()
         self.check_if_attributes_is_allowed()
