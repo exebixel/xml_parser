@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<note xsi:schemaLocation="www.test.com test.xsd">
+<note xsi:schemaLocation="www.kotlin.com /Users/matheusfelipe/xml_parser/MainActivity.xsd">
     <to>John</to>
     <from>Jane</from>
     <heading>Reminder</heading>

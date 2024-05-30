@@ -1,7 +1,7 @@
 
 from datetime import datetime
 
-from xml_parser_comp.model.xsd_tree import XSDElementTypeAttribute
+from compiler.model.xsd_tree import XSDElementTypeAttribute
 
 
 class ElementTypeValidator():

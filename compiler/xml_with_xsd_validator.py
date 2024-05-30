@@ -1,7 +1,7 @@
-from xml_parser_comp.element_type_validator import ElementTypeValidator
-from xml_parser_comp.exceptions.xml_error import XMLParseError
-from xml_parser_comp.model.xml_tree import XMLTree
-from xml_parser_comp.model.xsd_tree import XSDElementTypeAttribute, XSDTree
+from compiler.model.xml_tree import XMLTree
+from compiler.exceptions.xml_error import XMLParseError
+from compiler.element_type_validator import ElementTypeValidator
+from compiler.model.xsd_tree import XSDElementTypeAttribute, XSDTree
 
 
 class XMLWithXSDValidator:
@@ -53,48 +53,3 @@ class XMLWithXSDValidator:
                 )
 
         return True
-
-
-if __name__ == "__main__":
-    from xml_parser_comp.xml_base_validator import XMLBaseValidator
-    from xml_parser_comp.xsd_validator import XSDValidator
-
-    xml_parser = XMLBaseValidator(
-        """
-    <note>
-        <to>Tove</to>
-        <from>Jani</from>
-        <heading>Reminder</heading>
-        <body valor="teste">Don't forget me this weekend!</body>
-    </note>
-    """
-    )
-    xml_parser.validate()
-    xsd_parser = XSDValidator(
-    """
-    <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
-        <xs:element name="note">
-            <xs:complexType>
-                <xs:sequence>
-                    <xs:element name="to" type="xs:string"/>
-                    <xs:element name="from" type="xs:string"/>
-                    <xs:element name="heading" type="xs:string"/>
-                    <xs:element name="body" type="xs:string">
-                        <xs:complexType>
-                            <xs:attribute name="valor" type="xs:string"/>
-                        </xs:complexType>
-                    </xs:element>
-                </xs:sequence>
-            </xs:complexType>
-        </xs:element>
-    </xs:schema>
-    """
-    )
-
-    xml_tree = xml_parser.generate_xml_tree()
-    xsd_tree = xsd_parser.generate_xsd_tree()
-
-    xml_with_xsd_validator = XMLWithXSDValidator(xml_tree, xsd_tree)
-    xml_with_xsd_validator.validate_tag(xml_tree, xsd_tree)
-    print("XML is valid")
-    xml_parser.print_xml_tree(xml_tree)

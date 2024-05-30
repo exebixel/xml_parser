@@ -1,8 +1,7 @@
 import re
-
-from xml_parser_comp.exceptions.xml_error import XMLParseError
-from xml_parser_comp.model.xml_token import XMLToken
-from xml_parser_comp.model.xml_tree import XMLTree
+from compiler.model.xml_tree import XMLTree
+from compiler.model.xml_token import XMLToken
+from compiler.exceptions.xml_error import XMLParseError
 
 
 class XMLBaseValidator:
@@ -149,37 +148,3 @@ class XMLBaseValidator:
                 )
 
         return xml_tree
-
-    def print_xml_tree(self, xml_tree: XMLTree, level=0):
-        print("  " * level, f"Tag: {xml_tree.tag}", end="")
-        print(
-            f", Attributes: {xml_tree.attributes}" if xml_tree.attributes else "",
-            end="",
-        )
-        print(f", Text: {xml_tree.text}" if xml_tree.text else "")
-        for child in xml_tree.children:
-            self.print_xml_tree(child, level + 1)
-
-
-if __name__ == "__main__":
-    xml_string = """
-    <?xml version="1.0"?>
-    <note xsi:schemaLocation="www.test.com test.xsd">
-        <to>Tove</to>
-        <from>Jani</from>
-        <from>Jani</from>
-        <heading>Reminder</heading>
-        <body>Don't forget me this weekend!
-            <magia>hola</magia>
-            Haha
-        </body>
-    </note>
-    """
-    xml_validator = XMLBaseValidator(xml_string)
-    xml_validator.xml_tokens = xml_validator.generate_tokens()
-    xml_validator.check_first_tags()
-    print(xml_validator.validate_schema_location())
-    # xml_validator.validate()
-
-    # xml_tree = xml_validator.generate_xml_tree()
-    # xml_validator.print_xml_tree(xml_tree)

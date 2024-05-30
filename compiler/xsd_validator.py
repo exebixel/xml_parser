@@ -1,9 +1,7 @@
 import re
-
-
-from xml_parser_comp.exceptions.xsd_error import XSDError
-from xml_parser_comp.model.xsd_token import XSDToken
-from xml_parser_comp.model.xsd_tree import (
+from compiler.model.xsd_token import XSDToken
+from compiler.exceptions.xsd_error import XSDError
+from compiler.model.xsd_tree import (
     XSDAttribute,
     XSDElementTypeAttribute,
     XSDTree,
@@ -199,49 +197,3 @@ class XSDValidator:
                 stack.pop()
 
         return xsd_tree
-
-
-if __name__ == "__main__":
-    xsd_string = """
-    <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
-        <xs:element name="note">
-            <xs:complexType>
-                <xs:sequence>
-                    <xs:element name="to" type="xs:string"/>
-                    <xs:element name="from" type="xs:string"/>
-                    <xs:element name="heading">
-                        <xs:complexType>
-                            <xs:element name="magia" type="xs:string"/>
-                            <xs:attribute name="valor" type="xs:string"/>
-                        </xs:complexType>
-                    </xs:element>
-                    <xs:element name="body">
-                        <xs:complexType>
-                            <xs:sequence>
-                                <xs:element name="magia" type="xs:string"/>
-                            </xs:sequence>
-                            <xs:attribute name="valor" type="xs:string"/>
-                        </xs:complexType>
-                    </xs:element>
-                </xs:sequence>
-            </xs:complexType>
-        </xs:element>
-    </xs:schema>
-    """
-
-    xsd_validator = XSDValidator(xsd_string)
-    xsd_validator.validate()
-
-    tree = xsd_validator.generate_xsd_tree()
-    print(tree)
-    for child in tree.children:
-        print("  ", child)
-        for sub_child in child.children:
-            print("    ", sub_child)
-    # tree = xsd_validator.generate_xsd_tree()
-    # for tag in tree:
-    #     print(tag)
-
-    # print(xsd_validator.check_if_all_tags_are_closed())
-    # print(xsd_validator.check_if_attributes_is_allowed())
-    # print(xsd_validator.check_if_tags_is_allowed())

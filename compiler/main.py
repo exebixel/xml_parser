@@ -1,14 +1,14 @@
 import click
 from traitlets import default
-from xml_parser_comp.exceptions.xml_error import XMLParseError
-from xml_parser_comp.exceptions.xsd_error import XSDError
-from xml_parser_comp.xml_base_validator import XMLBaseValidator
-from xml_parser_comp.xml_with_xsd_validator import XMLWithXSDValidator
-from xml_parser_comp.xsd_validator import XSDValidator
+from compiler.xsd_validator import XSDValidator
+from compiler.exceptions.xsd_error import XSDError
+from compiler.exceptions.xml_error import XMLParseError
+from compiler.xml_base_validator import XMLBaseValidator
+from compiler.xml_with_xsd_validator import XMLWithXSDValidator
 
 
 @click.command()
-@click.option("xml_file_path", "--xml", type=click.Path(exists=True), help="XML file path", default="./tests/test.xml")
+@click.option("xml_file_path", "--xml", type=click.Path(exists=True), help="XML file path", required=True)
 def main(xml_file_path: str):
 
     with open(xml_file_path, "r") as file:
@@ -40,4 +40,3 @@ def main(xml_file_path: str):
         return
     
     print("XML is valid according to the XSD")
-    xml.print_xml_tree(xml_tree)
