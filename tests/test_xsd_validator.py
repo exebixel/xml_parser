@@ -199,101 +199,7 @@ class TestXSDValidator(unittest.TestCase):
             xsd_validator.check_if_attributes_is_allowed()
         self.assertEqual(str(context.exception), "Attribute error is not allowed")
 
-    def test_generate_xsd_tree(self):
-        xsd_string = """
-        <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
-            <xs:element name="note">
-                <xs:complexType>
-                    <xs:sequence>
-                        <xs:element name="to" type="xs:string"/>
-                        <xs:element name="from" type="xs:string"/>
-                        <xs:element name="heading" type="xs:string"/>
-                        <xs:element name="body" type="xs:string"/>
-                    </xs:sequence>
-                </xs:complexType>
-            </xs:element>
-        </xs:schema>
-        """
-        xsd_validator = XSDValidator(xsd_string)
-        xsd_tree = xsd_validator.generate_xsd_tree()
-        self.assertEqual(
-            xsd_tree,
-            XSDTree(
-                name="note",
-                type="xs:sequence",
-                children=[
-                    XSDTree(name="to", type="xs:string"),
-                    XSDTree(name="from", type="xs:string"),
-                    XSDTree(name="heading", type="xs:string"),
-                    XSDTree(name="body", type="xs:string"),
-                ],
-            ),
-        )
-
-    def test_generate_xsd_tree_with_complex_type(self):
-        xsd_string = """
-        <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
-            <xs:element name="note">
-                <xs:complexType>
-                    <xs:sequence>
-                        <xs:element name="to" type="xs:string"/>
-                        <xs:element name="from" type="xs:string"/>
-                        <xs:element name="heading">
-                            <xs:complexType>
-                                <xs:sequence>
-                                    <xs:element name="magia" type="xs:string"/>
-                                </xs:sequence>
-                                <xs:attribute name="valor" type="xs:string"/>
-                            </xs:complexType>
-                        </xs:element>
-                        <xs:element name="body">
-                            <xs:complexType>
-                                <xs:sequence>
-                                    <xs:element name="magia" type="xs:string"/>
-                                </xs:sequence>
-                                <xs:attribute name="valor" type="xs:string"/>
-                            </xs:complexType>
-                        </xs:element>
-                    </xs:sequence>
-                </xs:complexType>
-            </xs:element>
-        </xs:schema>
-        """
-        xsd_validator = XSDValidator(xsd_string)
-        xsd_tree = xsd_validator.generate_xsd_tree()
-        self.assertEqual(
-            xsd_tree,
-            XSDTree(
-                name="note",
-                type="xs:sequence",
-                children=[
-                    XSDTree(name="to", type="xs:string"),
-                    XSDTree(name="from", type="xs:string"),
-                    XSDTree(
-                        name="heading",
-                        type="xs:sequence",
-                        children=[
-                            XSDTree(name="magia", type="xs:string"),
-                        ],
-                        attributes=[
-                            XSDAttribute(name="valor", type="xs:string"),
-                        ],
-                    ),
-                    XSDTree(
-                        name="body",
-                        type="xs:sequence",
-                        children=[
-                            XSDTree(name="magia", type="xs:string"),
-                        ],
-                        attributes=[
-                            XSDAttribute(name="valor", type="xs:string"),
-                        ],
-                    ),
-                ],
-            ),
-        )
-
-    def test_generate_xsd_tree_with_error(self):
+    def test_tags_ordered_with_error(self):
         xsd_string = """
         <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
             <xs:element name="note">
@@ -322,5 +228,5 @@ class TestXSDValidator(unittest.TestCase):
         """
         xsd_validator = XSDValidator(xsd_string)
         with self.assertRaises(XSDError) as context:
-            xsd_validator.generate_xsd_tree()
-        self.assertEqual(str(context.exception), "xs:element should be a child of xs:complexType")
+            xsd_validator.check_if_tags_is_ordered()
+        self.assertEqual(str(context.exception), "xs:element should be a child of xs:sequence or xs:schema")

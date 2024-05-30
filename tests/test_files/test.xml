@@ -1,0 +1,8 @@
+<note>
+    <to>John</to>
+    <from>Jane</from>
+    <heading>Reminder</heading>
+    <body reminder="2024-05-13">Don't forget to buy milk
+        <ready>Yes</ready>
+    </body>
+</note>
