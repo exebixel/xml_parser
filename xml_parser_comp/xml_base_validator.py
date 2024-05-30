@@ -9,6 +9,7 @@ class XMLBaseValidator:
     def __init__(self, xml_string: str):
         self.xml_string: str = xml_string
         self.xml_tokens: list[XMLToken] = []
+        self.__path_to_schema: str = None
 
     def generate_tokens(self) -> list[XMLToken]:
         matches = re.findall(r"<(/?)([^>]+)>|([^<]+)", self.xml_string)
@@ -79,9 +80,54 @@ class XMLBaseValidator:
             raise XMLParseError("There should be only one root element")
         return True
 
+    def check_first_tags(self):
+        if self.xml_tokens[0].tag_name != "?xml" and self.xml_tokens[
+            0
+        ].attributes not in ["version"]:
+            raise XMLParseError("First tag should be <?xml version='1.0'?>")
+        if self.xml_tokens[0].attributes.get("version") != "1.0":
+            raise XMLParseError("XML Version should be 1.0")
+        self.xml_tokens = self.xml_tokens[1:]
+
+        for attribute in self.xml_tokens[0].attributes.keys():
+            if attribute in ["xsi:schemaLocation", "xsi:noNamespaceSchemaLocation"]:
+                break
+        else:
+            raise XMLParseError("Root tag should have the schema location")
+
+        return True
+
     def validate(self):
         self.xml_tokens = self.generate_tokens()
+        self.check_first_tags()
+        self.__path_to_schema = self.validate_schema_location()
         self.check_if_all_tags_are_closed()
+
+    def validate_schema_location(self) -> str:
+        if not self.xml_tokens:
+            raise XMLParseError("There are no tokens to validate")
+        if self.__path_to_schema:
+            return self.__path_to_schema
+
+        token = self.xml_tokens[0]
+        if "xsi:schemaLocation" in token.attributes.keys():
+            if len(token.attributes.get("xsi:schemaLocation").split(" ")) == 2:
+                schema_path = token.attributes.get("xsi:schemaLocation").split(" ")[1]
+                token.attributes = {}
+                return schema_path
+            raise XMLParseError("Schema location should have two values")
+
+        if "xsi:noNamespaceSchemaLocation" in token.attributes.keys():
+            schema_path = token.attributes.get("xsi:noNamespaceSchemaLocation")
+            token.attributes = {}
+            return schema_path
+
+        raise XMLParseError("Root tag should be the schema location")
+
+    def get_schema_location(self) -> str:
+        if not self.__path_to_schema:
+            raise XMLParseError("Schema location was not validated")
+        return self.__path_to_schema
 
     def generate_xml_tree(self):
         stack = []
@@ -106,7 +152,10 @@ class XMLBaseValidator:
 
     def print_xml_tree(self, xml_tree: XMLTree, level=0):
         print("  " * level, f"Tag: {xml_tree.tag}", end="")
-        print(f", Attributes: {xml_tree.attributes}" if xml_tree.attributes else "", end="")
+        print(
+            f", Attributes: {xml_tree.attributes}" if xml_tree.attributes else "",
+            end="",
+        )
         print(f", Text: {xml_tree.text}" if xml_tree.text else "")
         for child in xml_tree.children:
             self.print_xml_tree(child, level + 1)
@@ -114,7 +163,8 @@ class XMLBaseValidator:
 
 if __name__ == "__main__":
     xml_string = """
-    <note key="test">
+    <?xml version="1.0"?>
+    <note xsi:schemaLocation="www.test.com test.xsd">
         <to>Tove</to>
         <from>Jani</from>
         <from>Jani</from>
@@ -126,14 +176,10 @@ if __name__ == "__main__":
     </note>
     """
     xml_validator = XMLBaseValidator(xml_string)
-    xml_validator.validate()
+    xml_validator.xml_tokens = xml_validator.generate_tokens()
+    xml_validator.check_first_tags()
+    print(xml_validator.validate_schema_location())
+    # xml_validator.validate()
 
-    xml_tree = xml_validator.generate_xml_tree()
-    xml_validator.print_xml_tree(xml_tree)
-    # print(xml_tree.tag)
-    # for tree in xml_tree.children:
-    #     print("\t", tree)
-    #     for child in tree.children:
-    #         print("\t\t", child)
-    #         for sub_child in child.children:
-    #             print("\t\t\t", sub_child)
+    # xml_tree = xml_validator.generate_xml_tree()
+    # xml_validator.print_xml_tree(xml_tree)
