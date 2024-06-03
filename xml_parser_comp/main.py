@@ -22,8 +22,12 @@ def main(xml_file_path: str):
         print(f"XML Error: {e}")
         return
 
-    with open(xsd_file_path, "r") as file:
-        xsd_string = file.read()
+    try:
+        with open(xsd_file_path, "r") as file:
+            xsd_string = file.read()
+    except FileNotFoundError:
+        print(f"ERROR: XSD file not found at {xsd_file_path}")
+        return
     try:
         xsd = XSDValidator(xsd_string)
         xsd.validate()

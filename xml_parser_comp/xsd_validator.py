@@ -150,12 +150,24 @@ class XSDValidator:
             if tag.is_closing_tag:
                 stack.pop()
 
+    def check_if_element_type_is_allowed(self):
+        types = [t.value for t in XSDElementTypeAttribute]
+        for tag in self.tokens:
+            if tag.name == "xs:element" or tag.name == "xs:attribute" and tag.is_opening_tag:
+                if tag.attributes.get("type") is None:
+                    continue
+                if tag.attributes.get("type") not in types:
+                    raise XSDError(
+                        message=f"Element type {tag.attributes.get('type')} is not allowed"
+                    )
+
     def validate(self):
         self.check_first_tags()
         self.check_if_all_tags_are_closed()
         self.check_if_tags_is_allowed()
         self.check_if_attributes_is_allowed()
         self.check_if_tags_is_ordered()
+        self.check_if_element_type_is_allowed()
 
     def generate_xsd_tree(self):
         xsd_tree: XSDTree = None
