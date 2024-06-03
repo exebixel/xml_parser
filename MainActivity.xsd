@@ -3,18 +3,18 @@
     <xs:element name="note">
         <xs:complexType>
             <xs:sequence>
-                <xs:element name="to" type="xs:string"/>
-                <xs:element name="from" type="xs:string"/>
-                <xs:element name="heading">
-                </xs:element>
+                <xs:element name="title" type="xs:string"/>
+                <xs:element name="subtitle" type="xs:string"/>
+                <xs:element name="description" type="xs:string"/>
                 <xs:element name="body">
                     <xs:complexType>
-                        <xs:sequence>
-                            <xs:element name="ready" type="xs:string"/>
-                        </xs:sequence>
                         <xs:attribute name="reminder" type="xs:date"/>
+                        <xs:attribute name="timeStamp" type="xs:string" />
+                        <xs:attribute name="messageID" type="xs:string" />
                     </xs:complexType>
                 </xs:element>
+                <xs:element name="score" type="xs:integer"/>
+                <xs:element name="footer" type="xs:boolean"/>
             </xs:sequence>
         </xs:complexType>
     </xs:element>

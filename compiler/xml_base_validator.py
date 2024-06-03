@@ -112,13 +112,13 @@ class XMLBaseValidator:
         if "xsi:schemaLocation" in token.attributes.keys():
             if len(token.attributes.get("xsi:schemaLocation").split(" ")) == 2:
                 schema_path = token.attributes.get("xsi:schemaLocation").split(" ")[1]
-                token.attributes = {}
+                del token.attributes["xsi:schemaLocation"]
                 return schema_path
             raise XMLParseError("Schema location should have two values")
 
         if "xsi:noNamespaceSchemaLocation" in token.attributes.keys():
             schema_path = token.attributes.get("xsi:noNamespaceSchemaLocation")
-            token.attributes = {}
+            del token.attributes["xsi:noNamespaceSchemaLocation"]
             return schema_path
 
         raise XMLParseError("Root tag should be the schema location")

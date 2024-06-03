@@ -1,9 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<note xsi:schemaLocation="www.kotlin.com /Users/matheusfelipe/xml_parser/MainActivity.xsd">
-    <to>John</to>
-    <from>Jane</from>
-    <heading>Reminder</heading>
-    <body reminder="2024-05-13">Don't forget to buy milk
-        <ready>Yes</ready>
+<note reminder="2024-05-13" xsi:schemaLocation="www.kotlin.com /Users/matheusfelipe/lexical_analyzer/MainActivity.xsd">
+    <title>Trabalho de Compiladores</title>
+    <subtitle>Analisador Léxico</subtitle>
+    <description>Desenvolvidor por Matheus Felipe Silva Santos</description>
+    <body reminder="2024-05-13" timeStamp="nsk" messageID="lkjn"> Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum.
     </body>
+    <score>100</score>
+    <footer>True</footer>
 </note>

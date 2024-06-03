@@ -12,7 +12,12 @@ class XMLWithXSDValidator:
     def validate(self) -> bool:
         return self.validate_tag(self.xml_tree, self.xsd_tree)
 
-    def validate_tag(self, xml_tag: XMLTree, xsd_tag: XSDTree) -> bool:
+    def validate_tag(self, xml_tag: XMLTree, xsd_tag: XSDTree, new_index: int = 0) -> bool:
+        if len(xsd_tag.children) < len(xml_tag.children):
+            item = xsd_tag.children[0]
+            while(len(xsd_tag.children) < len(xml_tag.children)):
+                xsd_tag.children.append(item)
+
         if xml_tag.tag != xsd_tag.name:
             raise XMLParseError(f"Tag {xml_tag.tag} is not allowed in this context")
 
@@ -44,7 +49,7 @@ class XMLWithXSDValidator:
                 xsd_child = xsd_tag.children[index]
             except IndexError:
                 raise XMLParseError(f"Tag {child.tag} is not allowed in this context")
-            self.validate_tag(child, xsd_child)
+            self.validate_tag(child, xsd_child, index)
         else:
             if len(xml_tag.children) < len(xsd_tag.children):
                 extra_tags = xsd_tag.children[len(xml_tag.children) :]
