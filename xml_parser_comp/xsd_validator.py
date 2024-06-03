@@ -20,7 +20,7 @@ class XSDValidator:
             "xs:sequence": [],
             "xs:complexType": [],
             "xs:element": ["name", "type"],
-            "xs:schema": ["xmlns:xs"],
+            "xs:schema": ["xmlns:xs", "attributeFormDefault", "elementFormDefault"],
             "xs:attribute": ["name", "type"],
         }
         self.xsd_string = xsd_string
