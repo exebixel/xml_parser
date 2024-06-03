@@ -17,8 +17,8 @@ class XMLWithXSDValidator:
             raise XMLParseError(f"Tag {xml_tag.tag} is not allowed in this context")
 
         if xsd_tag.type is not None:
-            # if xsd_tag.type == XSDElementTypeAttribute.SEQUENCE and xml_tag.text is not None:
-            #     raise XMLParseError(f"Tag {xml_tag.tag} is not allowed to have text")
+            if xsd_tag.type == XSDElementTypeAttribute.SEQUENCE and xml_tag.text != "":
+                raise XMLParseError(f"Tag {xml_tag.tag} is not allowed to have text")
             if not ElementTypeValidator.validate_type(xml_tag.text, xsd_tag.type):
                 raise XMLParseError(f"Tag {xml_tag.tag} has the wrong type")
 
