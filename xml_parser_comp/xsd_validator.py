@@ -144,7 +144,7 @@ class XSDValidator:
                     raise XSDError(message="xs:attribute should be a child of xs:complexType")
                 if tag.name == "xs:element" and stack[-1].name != "xs:sequence" and stack[-1].name != "xs:schema":
                     raise XSDError(message="xs:element should be a child of xs:sequence or xs:schema")
-
+                
                 stack.append(tag)
 
             if tag.is_closing_tag:
@@ -176,6 +176,8 @@ class XSDValidator:
             if token.is_opening_tag:
 
                 if token.name == "xs:complexType":
+                    # if stack[-1].type is not None:
+                    #     raise XSDError("complexElement should not have a type")
                     stack.append(None)
 
                 elif token.name == "xs:sequence" and stack[-1] is None:
