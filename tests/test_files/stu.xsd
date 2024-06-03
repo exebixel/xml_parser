@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<xs:schema attributeFormDefault="unqualified" elementFormDefault="qualified" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+  <xs:element name="stuMessages">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element name="stuMessage">
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element  name="esn" type="xs:string" />
+              <xs:element  name="uid" type="xs:string" />
+              <xs:element  name="unixTime" type="xs:string" />
+              <xs:element  name="gps" type="xs:string" />
+              <xs:element  name="payload">
+                <xs:complexType>
+                      <xs:attribute name="length" type="xs:integer" />
+                      <xs:attribute name="source" type="xs:string" />
+                      <xs:attribute name="encoding" type="xs:string" />
+                </xs:complexType>
+              </xs:element>
+            </xs:sequence>
+          </xs:complexType>
+        </xs:element>
+      </xs:sequence>
+      <xs:attribute name="timeStamp" type="xs:string"/>
+      <xs:attribute name="messageID" type="xs:string"/>
+    </xs:complexType>
+  </xs:element>
+</xs:schema>
