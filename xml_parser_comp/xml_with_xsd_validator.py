@@ -41,7 +41,8 @@ class XMLWithXSDValidator:
         for index in range(len(xml_tag.children)):
             child = xml_tag.children[index]
             try:
-                xsd_child = xsd_tag.children[index]
+                xsd_index = index % len(xsd_tag.children)
+                xsd_child = xsd_tag.children[xsd_index]
             except IndexError:
                 raise XMLParseError(f"Tag {child.tag} is not allowed in this context")
             self.validate_tag(child, xsd_child)
